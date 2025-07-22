@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Cell,
 } from "recharts";
 // ✅ CORRECT - This is a named import
 import { getTokenMetadata } from "../services/token.js";
@@ -549,67 +550,246 @@ export const TokenAnalysis = () => {
               </div>
             </div>
           </div>
-
           {/* Price Chart */}
-          <div className="bg-[#222] rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">📈 Price Chart (24h)</h2>
+
+          {/* Price Chart - Enhanced Version */}
+          <div className="bg-gradient-to-br from-[#222] to-[#1a1a1a] rounded-xl p-6 border border-[#333] shadow-lg">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <span className="text-2xl">📈</span>
+                <span>Price Chart (24h)</span>
+              </h2>
+              {marketData.price && (
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-green-400 font-medium">
+                    LIVE
+                  </span>
+                </div>
+              )}
+            </div>
+
             {marketData.chartData && marketData.chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={marketData.chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                  <XAxis
-                    dataKey="timestamp"
-                    type="number"
-                    scale="time"
-                    domain={["dataMin", "dataMax"]}
-                    tickFormatter={(timestamp) => {
-                      const date = new Date(timestamp);
-                      return date.toLocaleTimeString("en-US", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      });
-                    }}
-                    stroke="#888"
-                  />
-                  <YAxis
-                    domain={["dataMin", "dataMax"]}
-                    tickFormatter={(value) => `${value.toFixed(6)}`}
-                    stroke="#888"
-                  />
-                  <Tooltip
-                    labelFormatter={(timestamp) => {
-                      const date = new Date(timestamp);
-                      return date.toLocaleString();
-                    }}
-                    formatter={(value) => [
-                      `${parseFloat(value).toFixed(6)}`,
-                      "Price",
-                    ]}
-                    contentStyle={{
-                      backgroundColor: "#333",
-                      border: "1px solid #555",
-                      borderRadius: "8px",
-                      color: "#fff",
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="price"
-                    stroke="#10B981"
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r: 4, fill: "#10B981" }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="relative">
+                {/* Chart Container with Gradient Background */}
+                <div className="relative bg-gradient-to-t from-[#0a0a0a] to-transparent rounded-lg p-4">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart
+                      data={marketData.chartData}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                      barCategoryGap="10%"
+                    >
+                      {/* Enhanced Grid */}
+                      <CartesianGrid
+                        strokeDasharray="2 4"
+                        stroke="#333"
+                        strokeOpacity={0.3}
+                        horizontal={true}
+                        vertical={false}
+                      />
+
+                      {/* X-Axis */}
+                      <XAxis
+                        dataKey="timestamp"
+                        type="number"
+                        scale="time"
+                        domain={["dataMin", "dataMax"]}
+                        tickFormatter={(timestamp) => {
+                          const date = new Date(timestamp);
+                          return date.toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                          });
+                        }}
+                        stroke="#666"
+                        fontSize={11}
+                        tickLine={false}
+                        axisLine={false}
+                        dy={10}
+                        interval="preserveStartEnd"
+                      />
+
+                      {/* Y-Axis */}
+                      <YAxis
+                        domain={["dataMin * 0.998", "dataMax * 1.002"]}
+                        tickFormatter={(value) => {
+                          if (value >= 1) return `${value.toFixed(4)}`;
+                          if (value >= 0.0001) return `${value.toFixed(6)}`;
+                          return `${value.toExponential(2)}`;
+                        }}
+                        stroke="#666"
+                        fontSize={11}
+                        tickLine={false}
+                        axisLine={false}
+                        width={80}
+                      />
+
+                      {/* Enhanced Tooltip */}
+                      <Tooltip
+                        labelFormatter={(timestamp) => {
+                          const date = new Date(timestamp);
+                          return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+                        }}
+                        formatter={(value) => {
+                          const price = parseFloat(value);
+                          let formattedPrice;
+                          if (price >= 1)
+                            formattedPrice = `${price.toFixed(4)}`;
+                          else if (price >= 0.0001)
+                            formattedPrice = `${price.toFixed(6)}`;
+                          else formattedPrice = `${price.toExponential(2)}`;
+                          return [formattedPrice, "Price"];
+                        }}
+                        contentStyle={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #444",
+                          borderRadius: "12px",
+                          color: "#fff",
+                          fontSize: "12px",
+                          padding: "12px",
+                          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+                          backdropFilter: "blur(10px)",
+                        }}
+                        labelStyle={{
+                          color: "#888",
+                          marginBottom: "4px",
+                          fontSize: "11px",
+                        }}
+                        cursor={{
+                          fill: "rgba(16, 185, 129, 0.1)",
+                          stroke: "#10B981",
+                          strokeWidth: 1,
+                          strokeDasharray: "2 2",
+                        }}
+                      />
+
+                      {/* Gradient Definitions */}
+                      <defs>
+                        <linearGradient
+                          id="barGradient"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor="#10B981"
+                            stopOpacity={0.9}
+                          />
+                          <stop
+                            offset="50%"
+                            stopColor="#06D6A0"
+                            stopOpacity={0.7}
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="#118AB2"
+                            stopOpacity={0.5}
+                          />
+                        </linearGradient>
+                        <linearGradient
+                          id="barGradientHover"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor="#10B981"
+                            stopOpacity={1}
+                          />
+                          <stop
+                            offset="50%"
+                            stopColor="#06D6A0"
+                            stopOpacity={0.9}
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="#118AB2"
+                            stopOpacity={0.7}
+                          />
+                        </linearGradient>
+                        <filter id="glow">
+                          <feGaussianBlur
+                            stdDeviation="3"
+                            result="coloredBlur"
+                          />
+                          <feMerge>
+                            <feMergeNode in="coloredBlur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                      </defs>
+
+                      {/* Price Bars with Dynamic Colors */}
+                      <Bar
+                        dataKey="price"
+                        radius={[2, 2, 0, 0]}
+                        maxBarSize={16}
+                      >
+                        {marketData.chartData.map((entry, index) => {
+                          // Calculate if this bar is higher or lower than previous
+                          const prevPrice =
+                            index > 0
+                              ? marketData.chartData[index - 1].price
+                              : entry.price;
+                          const isUp = entry.price >= prevPrice;
+
+                          return (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={isUp ? "url(#barGradient)" : "#ef4444"}
+                              stroke={isUp ? "#10B981" : "#ef4444"}
+                              strokeWidth={0.5}
+                              filter="url(#glow)"
+                            />
+                          );
+                        })}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Chart Stats Overlay */}
+                <div className="absolute top-6 right-6 bg-black/50 backdrop-blur-sm rounded-lg p-3 text-xs">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                      <span className="text-gray-300">Current Price</span>
+                    </div>
+                    {marketData.priceChange24hPercent !== null && (
+                      <div
+                        className={`text-right font-mono ${
+                          marketData.priceChange24hPercent >= 0
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {marketData.priceChange24hPercent >= 0 ? "+" : ""}
+                        {marketData.priceChange24hPercent.toFixed(2)}%
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             ) : (
-              <div className="h-[200px] flex items-center justify-center text-gray-400">
+              <div className="h-[280px] flex items-center justify-center text-gray-400 bg-gradient-to-t from-[#0a0a0a] to-transparent rounded-lg">
                 <div className="text-center">
-                  <p>📊 Chart data not available</p>
-                  <p className="text-sm mt-1">
+                  <div className="text-4xl mb-3">📊</div>
+                  <p className="text-lg font-medium">
+                    Chart data not available
+                  </p>
+                  <p className="text-sm mt-2 text-gray-500">
                     Price data might be limited for this token
                   </p>
+                  <div className="mt-4 flex justify-center">
+                    <div className="w-32 h-1 bg-gray-700 rounded-full overflow-hidden">
+                      <div className="w-0 h-full bg-gray-600 rounded-full animate-pulse"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
