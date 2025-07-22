@@ -467,28 +467,6 @@ export const HomePage = () => {
           </label>
         </div>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-[#1a1a1a] p-4 rounded-lg border border-gray-800">
-            <div className="text-sm text-gray-400">Total Tokens</div>
-            <div className="text-2xl font-bold text-green-500">
-              {enrichedTokens.length}
-            </div>
-          </div>
-          <div className="bg-[#1a1a1a] p-4 rounded-lg border border-gray-800">
-            <div className="text-sm text-gray-400">Filtered Results</div>
-            <div className="text-2xl font-bold text-blue-500">
-              {filteredTokens.length}
-            </div>
-          </div>
-          <div className="bg-[#1a1a1a] p-4 rounded-lg border border-gray-800">
-            <div className="text-sm text-gray-400">Active Filter</div>
-            <div className="text-2xl font-bold text-purple-500">
-              {activeFilter}
-            </div>
-          </div>
-        </div>
-
         {/* Token Table */}
         <div className="overflow-x-auto bg-[#1a1a1a] rounded-xl shadow-lg border border-gray-800">
           <table className="min-w-full divide-y divide-gray-700">
@@ -654,6 +632,7 @@ export const HomePage = () => {
                         <span className="text-gray-500">N/A</span>
                       )}
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {token.priceData?.volume24h
                         ? `$${formatNumber(token.priceData.volume24h)}`

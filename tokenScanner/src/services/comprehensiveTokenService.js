@@ -11,7 +11,7 @@ const RPC_URL = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
 const getHolderDetails = async (holderAddress, mintAddress) => {
   try {
     console.log(`🔍 Fetching details for holder: ${holderAddress}`);
-    
+
     let holderInfo = {
       address: holderAddress,
       name: null,
@@ -20,11 +20,11 @@ const getHolderDetails = async (holderAddress, mintAddress) => {
       balanceUsd: 0,
       isContract: false,
       programOwner: null,
-      accountType: 'wallet',
+      accountType: "wallet",
       socialLinks: {},
       domains: [],
       nfts: [],
-      creationDate: null
+      creationDate: null,
     };
 
     // 1. Check if it's a program/contract account
@@ -35,20 +35,20 @@ const getHolderDetails = async (holderAddress, mintAddress) => {
       params: [
         holderAddress,
         {
-          encoding: "jsonParsed"
-        }
-      ]
+          encoding: "jsonParsed",
+        },
+      ],
     });
 
     if (accountInfoResponse.data.result?.value) {
       const accountInfo = accountInfoResponse.data.result.value;
-      
+
       if (accountInfo.executable) {
         holderInfo.isContract = true;
-        holderInfo.accountType = 'program';
+        holderInfo.accountType = "program";
         holderInfo.programOwner = accountInfo.owner;
       } else if (accountInfo.owner !== "11111111111111111111111111111111") {
-        holderInfo.accountType = 'pda'; // Program Derived Account
+        holderInfo.accountType = "pda"; // Program Derived Account
         holderInfo.programOwner = accountInfo.owner;
       }
     }
@@ -62,12 +62,12 @@ const getHolderDetails = async (holderAddress, mintAddress) => {
         params: [
           holderAddress,
           {
-            mint: mintAddress
+            mint: mintAddress,
           },
           {
-            encoding: "jsonParsed"
-          }
-        ]
+            encoding: "jsonParsed",
+          },
+        ],
       });
 
       if (tokenAccountsResponse.data.result?.value?.length > 0) {
@@ -85,7 +85,7 @@ const getHolderDetails = async (holderAddress, mintAddress) => {
         `https://sns-sdk-proxy.bonfida.workers.dev/resolve/${holderAddress}`,
         { timeout: 5000 }
       );
-      
+
       if (snsResponse.data && snsResponse.data.length > 0) {
         holderInfo.domains = snsResponse.data;
         holderInfo.name = snsResponse.data[0]; // Use first domain as display name
@@ -100,15 +100,16 @@ const getHolderDetails = async (holderAddress, mintAddress) => {
         `https://api.cardinal.so/metadata/${holderAddress}`,
         { timeout: 5000 }
       );
-      
+
       if (profileResponse.data) {
         const profile = profileResponse.data;
-        holderInfo.name = holderInfo.name || profile.displayName || profile.name;
+        holderInfo.name =
+          holderInfo.name || profile.displayName || profile.name;
         holderInfo.avatar = profile.image || profile.avatar;
         holderInfo.socialLinks = {
           twitter: profile.twitter,
           discord: profile.discord,
-          website: profile.website
+          website: profile.website,
         };
       }
     } catch (error) {
@@ -117,13 +118,34 @@ const getHolderDetails = async (holderAddress, mintAddress) => {
 
     // 5. Check for well-known addresses (exchanges, programs, etc.)
     const knownAddresses = {
-      "11111111111111111111111111111111": { name: "System Program", type: "program" },
-      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA": { name: "SPL Token Program", type: "program" },
-      "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL": { name: "Associated Token Program", type: "program" },
-      "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM": { name: "Raydium AMM", type: "exchange" },
-      "JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB": { name: "Jupiter", type: "exchange" },
-      "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8": { name: "Raydium Authority V4", type: "exchange" },
-      "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1": { name: "Raydium Liquidity Pool", type: "exchange" },
+      "11111111111111111111111111111111": {
+        name: "System Program",
+        type: "program",
+      },
+      TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA: {
+        name: "SPL Token Program",
+        type: "program",
+      },
+      ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL: {
+        name: "Associated Token Program",
+        type: "program",
+      },
+      "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM": {
+        name: "Raydium AMM",
+        type: "exchange",
+      },
+      JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB: {
+        name: "Jupiter",
+        type: "exchange",
+      },
+      "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8": {
+        name: "Raydium Authority V4",
+        type: "exchange",
+      },
+      "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1": {
+        name: "Raydium Liquidity Pool",
+        type: "exchange",
+      },
       // Add more known addresses as needed
     };
 
@@ -141,14 +163,14 @@ const getHolderDetails = async (holderAddress, mintAddress) => {
           jsonrpc: "2.0",
           id: "get-signatures",
           method: "getSignaturesForAddress",
-          params: [
-            holderAddress,
-            { limit: 5 }
-          ]
+          params: [holderAddress, { limit: 5 }],
         });
 
         if (recentTxResponse.data.result?.length > 0) {
-          const oldestTx = recentTxResponse.data.result[recentTxResponse.data.result.length - 1];
+          const oldestTx =
+            recentTxResponse.data.result[
+              recentTxResponse.data.result.length - 1
+            ];
           if (oldestTx.blockTime) {
             holderInfo.creationDate = new Date(oldestTx.blockTime * 1000);
           }
@@ -165,36 +187,40 @@ const getHolderDetails = async (holderAddress, mintAddress) => {
       address: holderAddress,
       name: null,
       balance: 0,
-      error: error.message
+      error: error.message,
     };
   }
 };
 
 // Function to get holder's transaction history
-const getHolderTransactions = async (holderAddress, mintAddress, limit = 50) => {
+const getHolderTransactions = async (
+  holderAddress,
+  mintAddress,
+  limit = 50
+) => {
   try {
     console.log(`📜 Fetching transactions for: ${holderAddress}`);
 
     // Get recent signatures
     const signaturesResponse = await axios.post(RPC_URL, {
       jsonrpc: "2.0",
-     id: "get-signatures-for-address",
+      id: "get-signatures-for-address",
       method: "getSignaturesForAddress",
       params: [
         holderAddress,
-        { 
+        {
           limit: limit,
-          commitment: "confirmed"
-        }
-      ]
+          commitment: "confirmed",
+        },
+      ],
     });
 
-   
-
-    if (!signaturesResponse.data.result || signaturesResponse.data.result.length === 0) {
+    if (
+      !signaturesResponse.data.result ||
+      signaturesResponse.data.result.length === 0
+    ) {
       return [];
     }
-  
 
     const signatures = signaturesResponse.data.result;
     console.log(`Found ${signatures.length} transactions`);
@@ -214,14 +240,14 @@ const getHolderTransactions = async (holderAddress, mintAddress, limit = 50) => 
               sig.signature,
               {
                 encoding: "jsonParsed",
-                maxSupportedTransactionVersion: 0
-              }
-            ]
+                maxSupportedTransactionVersion: 0,
+              },
+            ],
           });
 
           if (txResponse.data.result) {
             const tx = txResponse.data.result;
-            
+
             // Parse the transaction to find token-related activities
             const parsedTx = parseTransaction(tx, holderAddress, mintAddress);
             if (parsedTx) {
@@ -230,7 +256,7 @@ const getHolderTransactions = async (holderAddress, mintAddress, limit = 50) => 
                 blockTime: sig.blockTime,
                 slot: sig.slot,
                 err: sig.err,
-                ...parsedTx
+                ...parsedTx,
               };
             }
           }
@@ -241,11 +267,11 @@ const getHolderTransactions = async (holderAddress, mintAddress, limit = 50) => 
       });
 
       const batchResults = await Promise.all(batchPromises);
-      transactions.push(...batchResults.filter(tx => tx !== null));
-      
+      transactions.push(...batchResults.filter((tx) => tx !== null));
+
       // Small delay between batches
       if (i + batchSize < signatures.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
 
@@ -271,21 +297,21 @@ const parseTransaction = (tx, holderAddress, mintAddress) => {
 
     // Look through the instructions for token transfers
     const instructions = tx.transaction.message.instructions;
-    
+
     for (const instruction of instructions) {
       if (instruction.program === "spl-token" && instruction.parsed) {
         const parsed = instruction.parsed;
-        
+
         if (parsed.type === "transfer" || parsed.type === "transferChecked") {
           const info = parsed.info;
-          
+
           // Check if this transfer involves our mint address
           if (parsed.type === "transferChecked" && info.mint === mintAddress) {
             amount = parseFloat(info.tokenAmount?.uiAmount || info.amount || 0);
             from = info.source;
             to = info.destination;
             transactionType = "transfer";
-            
+
             // Determine if this was a buy/sell/transfer for our holder
             if (info.authority === holderAddress) {
               description = "Token Transfer (Sent)";
@@ -303,14 +329,14 @@ const parseTransaction = (tx, holderAddress, mintAddress) => {
             description = "Token Transfer";
           }
         }
-        
+
         if (parsed.type === "mintTo" && info.mint === mintAddress) {
           amount = parseFloat(info.amount || 0);
           to = info.account;
           transactionType = "mint";
           description = "Token Mint";
         }
-        
+
         if (parsed.type === "burn" && info.mint === mintAddress) {
           amount = parseFloat(info.amount || 0);
           from = info.account;
@@ -323,13 +349,13 @@ const parseTransaction = (tx, holderAddress, mintAddress) => {
     // Check for DEX trades (Raydium, Jupiter, etc.)
     for (const instruction of instructions) {
       const programId = instruction.programId;
-      
+
       // Raydium
       if (programId === "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8") {
         transactionType = "swap";
         description = "Raydium Swap";
       }
-      
+
       // Jupiter
       if (programId === "JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB") {
         transactionType = "swap";
@@ -344,7 +370,7 @@ const parseTransaction = (tx, holderAddress, mintAddress) => {
       from: from,
       to: to,
       fee: tx.meta.fee || 0,
-      status: tx.meta.err ? "failed" : "success"
+      status: tx.meta.err ? "failed" : "success",
     };
   } catch (error) {
     console.log("ℹ️ Could not parse transaction");
@@ -356,20 +382,24 @@ const parseTransaction = (tx, holderAddress, mintAddress) => {
 const getHolderTokenPortfolio = async (holderAddress) => {
   try {
     console.log(`💰 Fetching token portfolio for: ${holderAddress}`);
-
+    const MAX_LIMIT = 20; // Adjust this value based on the API documentation
+    // Validate the limit parameter
+    if (limit < 1 || limit > MAX_LIMIT) {
+      throw new Error(
+        `Invalid limit: ${limit}. It must be between 1 and ${MAX_LIMIT}.`
+      );
+    }
     const response = await axios.post(RPC_URL, {
       jsonrpc: "2.0",
-      id: "get-token-accounts-by-owner",
-      method: "getTokenAccountsByOwner",
+      id: "getConfirmedSignaturesForAddress2",
+      method: "getConfirmedSignaturesForAddress2",
       params: [
         holderAddress,
         {
-          programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          limit: limit,
+          commitment: "confirmed",
         },
-        {
-          encoding: "jsonParsed"
-        }
-      ]
+      ],
     });
 
     if (!response.data.result?.value) {
@@ -377,18 +407,19 @@ const getHolderTokenPortfolio = async (holderAddress) => {
     }
 
     const tokenAccounts = response.data.result.value;
+    console.log(tokenAccounts);
     const portfolio = [];
 
     for (const account of tokenAccounts) {
       const tokenInfo = account.account.data.parsed.info;
       const balance = parseFloat(tokenInfo.tokenAmount.uiAmount);
-      
+
       if (balance > 0) {
         portfolio.push({
           mint: tokenInfo.mint,
           balance: balance,
           decimals: tokenInfo.tokenAmount.decimals,
-          address: account.pubkey
+          address: account.pubkey,
         });
       }
     }
@@ -407,7 +438,7 @@ const getSolBalance = async (holderAddress) => {
       jsonrpc: "2.0",
       id: "get-balance",
       method: "getBalance",
-      params: [holderAddress]
+      params: [holderAddress],
     });
 
     if (response.data.result?.value !== undefined) {
@@ -424,32 +455,28 @@ const getSolBalance = async (holderAddress) => {
 const getCompleteHolderProfile = async (holderAddress, mintAddress) => {
   try {
     console.log(`🔍 Getting complete profile for: ${holderAddress}`);
-    
-    const [
-      holderDetails,
-      transactions,
-      tokenPortfolio,
-      solBalance
-    ] = await Promise.all([
-      getHolderDetails(holderAddress, mintAddress),
-      getHolderTransactions(holderAddress, mintAddress, 20),
-      getHolderTokenPortfolio(holderAddress),
-      getSolBalance(holderAddress)
-    ]);
+
+    const [holderDetails, transactions, tokenPortfolio, solBalance] =
+      await Promise.all([
+        getHolderDetails(holderAddress, mintAddress),
+        getHolderTransactions(holderAddress, mintAddress, 20),
+        getHolderTokenPortfolio(holderAddress),
+        getSolBalance(holderAddress),
+      ]);
 
     return {
       ...holderDetails,
       solBalance: solBalance,
       transactions: transactions,
       tokenPortfolio: tokenPortfolio,
-      profileComplete: true
+      profileComplete: true,
     };
   } catch (error) {
     console.error("❌ Error fetching complete holder profile:", error);
     return {
       address: holderAddress,
       error: error.message,
-      profileComplete: false
+      profileComplete: false,
     };
   }
 };
@@ -460,5 +487,5 @@ export {
   getHolderTransactions,
   getHolderTokenPortfolio,
   getSolBalance,
-  getCompleteHolderProfile
+  getCompleteHolderProfile,
 };
