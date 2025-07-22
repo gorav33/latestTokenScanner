@@ -14,6 +14,10 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/token/:tokenId" element={<TokenAnalysis />} />
+          <Route
+            path="/token/:tokenId/holder/:holderAddress"
+            element={<handleHolderClick />}
+          />
         </Routes>
       </BrowserRouter>
     </>
