@@ -27,6 +27,56 @@ export const HomePage = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const [hideLowMC, setHideLowMC] = useState(false);
 
+  // Enhanced Mini Chart Component
+  const MiniPriceChart = ({ data, priceChange24h, currentPrice }) => {
+    if (!data || data.length === 0) {
+      return (
+        <div className="w-24 h-12 flex items-center justify-center bg-gray-800 rounded">
+          <span className="text-xs text-gray-500">No data</span>
+        </div>
+      );
+    }
+
+    const isPositive = priceChange24h >= 0;
+    const chartColor = isPositive ? "#10B981" : "#EF4444"; // Green for positive, red for negative
+    const fillColor = isPositive
+      ? "rgba(16, 185, 129, 0.1)"
+      : "rgba(239, 68, 68, 0.1)";
+
+    return (
+      <div className="w-24 h-12 relative">
+        <Sparklines data={data} width={96} height={48} margin={2}>
+          <SparklinesLine
+            style={{
+              strokeWidth: 2,
+              stroke: chartColor,
+              fill: fillColor,
+            }}
+          />
+          <SparklinesSpots
+            size={2}
+            style={{
+              stroke: chartColor,
+              strokeWidth: 1,
+              fill: chartColor,
+            }}
+          />
+        </Sparklines>
+
+        {/* Price change indicator */}
+        <div
+          className={`absolute top-0 right-0 text-xs font-medium px-1 rounded ${
+            isPositive
+              ? "text-green-400 bg-green-900/30"
+              : "text-red-400 bg-red-900/30"
+          }`}
+        >
+          {isPositive ? "↗" : "↘"}
+        </div>
+      </div>
+    );
+  };
+
   // Format large numbers (supply, market cap, etc.)
   const formatNumber = (num) => {
     if (num === null || num === undefined) return "N/A";
@@ -51,14 +101,22 @@ export const HomePage = () => {
     return Math.floor(Math.random() * 6);
   };
 
-  // Function to fetch historical price data
+  // Enhanced function to fetch historical price data with more realistic mock data
   const fetchHistoricalPriceData = async (tokenAddress) => {
     if (!tokenAddress) return [];
     try {
-      const mockPrices = Array.from({ length: 30 }, (_, i) => {
-        const basePrice = Math.random() * 100 + 10;
-        return basePrice + (Math.random() - 0.5) * basePrice * 0.2;
-      });
+      // Generate more realistic price movement data
+      const mockPrices = [];
+      let basePrice = Math.random() * 100 + 10;
+
+      for (let i = 0; i < 30; i++) {
+        // Simulate price movement with some trend and volatility
+        const trend = (Math.random() - 0.5) * 0.1; // Small trend factor
+        const volatility = (Math.random() - 0.5) * basePrice * 0.05; // 5% volatility
+        basePrice = Math.max(0.001, basePrice + trend + volatility);
+        mockPrices.push(basePrice);
+      }
+
       return mockPrices;
     } catch (err) {
       console.error(
@@ -475,8 +533,8 @@ export const HomePage = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   TOKEN
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  PRICE
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider min-w-[200px]">
+                  PRICE & CHART
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   CHANGE (24H)
@@ -574,44 +632,38 @@ export const HomePage = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium">
-                          {formatPrice(token.priceData?.price)}
-                        </span>
-                        {token.historicalPrices &&
-                        token.historicalPrices.length > 0 ? (
-                          <div className="mt-1">
-                            <Sparklines
-                              data={token.historicalPrices}
-                              width={80}
-                              height={15}
-                              margin={0}
-                            >
-                              <SparklinesLine
-                                style={{
-                                  strokeWidth: 1,
-                                  stroke: "#10B981",
-                                  fill: "none",
-                                }}
-                              />
-                              <SparklinesSpots
-                                size={1.5}
-                                style={{
-                                  stroke: "#10B981",
-                                  strokeWidth: 1,
-                                  fill: "#10B981",
-                                }}
-                              />
-                            </Sparklines>
-                          </div>
-                        ) : (
-                          <span className="text-gray-500 text-xs mt-1">
-                            No history
+
+                    {/* Enhanced Price & Chart Column */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-white text-sm">
+                            {formatPrice(token.priceData?.price)}
                           </span>
-                        )}
+                          {token.priceData?.priceChange5m !== undefined && (
+                            <span
+                              className={`text-xs ${
+                                token.priceData.priceChange5m >= 0
+                                  ? "text-green-400"
+                                  : "text-red-400"
+                              }`}
+                            >
+                              5m:{" "}
+                              {token.priceData.priceChange5m >= 0 ? "+" : ""}
+                              {token.priceData.priceChange5m.toFixed(2)}%
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Mini Chart */}
+                        <MiniPriceChart
+                          data={token.historicalPrices}
+                          priceChange24h={token.priceData?.priceChange24h || 0}
+                          currentPrice={token.priceData?.price}
+                        />
                       </div>
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {token.priceData?.priceChange24h !== undefined ? (
                         <div

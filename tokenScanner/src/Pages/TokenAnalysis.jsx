@@ -987,8 +987,8 @@ export const TokenAnalysis = () => {
         </div>
         {/* Holder Distribution */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-center">
-          <div className="bg-[#222] p-4 rounded-lg border border-green-500">
-            <p className="text-gray-400 text-sm">🎯 ACTUAL Total Holders</p>
+          <div className="bg-[#222] p-4 rounded-lg  transition-transform transform hover:scale-105 hover:bg-gray-800 hover:shadow-lg">
+            <p className="text-gray-400 text-md">🎯Total Holders</p>
             <p className="text-3xl font-bold text-green-400">
               {holderData.actualHolderCount.toLocaleString()}
             </p>
@@ -996,19 +996,19 @@ export const TokenAnalysis = () => {
               Real count from blockchain
             </p>
           </div>
-          <div className="bg-[#222] p-4 rounded-lg">
-            <p className="text-gray-400 text-sm">Whales (&gt;1%)</p>
+          <div className="bg-[#222] p-4 rounded-lg transition-transform transform hover:scale-105 hover:bg-gray-800 hover:shadow-lg">
+            <p className="text-gray-400 text-md">Whales (&gt;1%)</p>
             <p className="text-2xl font-bold text-blue-400">
               🐋 {holderData.distribution.whales}
             </p>
           </div>
-          <div className="bg-[#222] p-4 rounded-lg">
+          <div className="bg-[#222] p-4 rounded-lg transition-transform transform hover:scale-105 hover:bg-gray-800 hover:shadow-lg">
             <p className="text-gray-400 text-sm">Dolphins (0.1-1%)</p>
             <p className="text-2xl font-bold text-purple-400">
               🐬 {holderData.distribution.dolphins}
             </p>
           </div>
-          <div className="bg-[#222] p-4 rounded-lg">
+          <div className="bg-[#222] p-4 rounded-lg transition-transform transform hover:scale-105 hover:bg-gray-800 hover:shadow-lg">
             <p className="text-gray-400 text-sm">Fish (&lt;0.1%)</p>
             <p className="text-2xl font-bold text-orange-400">
               🐟 {holderData.distribution.fish}
